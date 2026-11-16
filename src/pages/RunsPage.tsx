@@ -6,6 +6,7 @@ import { formatCny, formatDateTime } from '@/lib/format';
 import { ACCOUNTS, ALL_MODELS, DEAL_LABELS, MODEL_DESCRIPTIONS, MODEL_LABELS } from '@/lib/constants';
 import { CHART_COLORS, CHART_TEXT, baseTextStyle } from '@/lib/chart';
 import { RequestSeq, runModelComparison } from '@/services/api';
+import { LATE_REFUND_SNAPSHOT_ID } from '@/data/sampleData';
 import type { BarSeriesOption, EChartsOption } from 'echarts';
 import { configChecksum, useAppStore } from '@/store/useAppStore';
 import type { AttributionModel, AttributionRun, DealDefinition, RunConfig, RunResults } from '@/types/domain';
@@ -28,7 +29,8 @@ export default function RunsPage() {
   const [toast, setToast] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
 
   const detailRun = store.runs.find((r) => r.runId === detailRunId) ?? null;
-  const latestSnapshot = store.snapshots[store.snapshots.length - 1];
+  // 迟到退款派生目标：R-1006 所在的 11-05 快照（评估用的 11-15 不参与归因运行的派生）
+  const lateRefundSnapshot = store.snapshots.find((s) => s.snapshotId === LATE_REFUND_SNAPSHOT_ID) ?? store.snapshots[store.snapshots.length - 1];
 
   const notify = (kind: 'success' | 'error', text: string) => {
     setToast({ kind, text });
@@ -132,9 +134,9 @@ export default function RunsPage() {
                         {run.status === 'completed' && run.approval?.revisionMatched && isOwner && (
                           <button className="sm primary" onClick={() => { const r = store.lockRun(run.runId); notify(r.ok ? 'success' : 'error', r.message); }}>锁定</button>
                         )}
-                        {run.status === 'locked' && run.snapshotId !== latestSnapshot.snapshotId && (
+                        {run.status === 'locked' && run.snapshotId === 'DS-2026-11-01' && (
                           <button className="sm danger" onClick={() => {
-                            const id = store.createSupersedingRun(run.runId, latestSnapshot.snapshotId);
+                            const id = store.createSupersedingRun(run.runId, lateRefundSnapshot.snapshotId);
                             if (id) { notify('success', `检测到锁定后退款，已生成新草稿运行 ${id}；旧运行图表保持不变`); setDetailRunId(id); }
                           }}>基于新退款生成新运行</button>
                         )}

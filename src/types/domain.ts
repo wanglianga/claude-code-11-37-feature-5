@@ -59,6 +59,10 @@ export interface Order {
   status: OrderStatus;
   touchpointIds: string[];
   scenarioTag?: string;
+  /** 评估分群：区域（缺省时评估样本标记为「未标注」） */
+  region?: string;
+  /** 评估分群：设备群（缺省时评估样本标记为「未标注」） */
+  deviceSegment?: string;
 }
 
 /** 退款事件（可能晚于广告回传与运行锁定到达） */
@@ -69,6 +73,8 @@ export interface RefundEvent {
   refundTime: string;
   reason: string;
   dataVersion: string;
+  /** 退款批次：簇重抽样时同批退款随订单整体移动，不拆散 */
+  refundBatchId?: string;
 }
 
 /** 订单净额版本：毛额 → 退款扣减 → 净额，可追溯 */

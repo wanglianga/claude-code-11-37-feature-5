@@ -11,12 +11,12 @@ const mem = new Map<string, string>();
   get length() { return mem.size; },
 };
 
-describe('应用页面 SSR 冒烟（五个路由均可完整渲染）', () => {
+describe('应用页面 SSR 冒烟（全部路由均可完整渲染）', () => {
   // 首次动态导入包含 echarts 大模块，转换较慢，单独放宽超时
   vi.setConfig({ testTimeout: 20000 });
   // react-router 在服务端渲染下会发出 useLayoutEffect 良性警告，与本应用正确性无关
   vi.spyOn(console, 'warn').mockImplementation(() => {});
-  const paths = ['/', '/runs', '/report', '/budget', '/share'];
+  const paths = ['/', '/runs', '/report', '/evaluation', '/review', '/budget', '/share'];
   for (const path of paths) {
     it(`路由 ${path} 渲染不抛错并包含品牌标识`, async () => {
       const { renderToString } = await import('react-dom/server');
